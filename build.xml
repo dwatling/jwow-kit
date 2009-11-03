@@ -1,0 +1,17 @@
+<project name="jwow" basedir="." default="dist">
+
+	<target name="clean">
+		<delete dir="build"/>
+		<delete file="jwow.jar"/>
+	</target>
+	
+	<target name="compile" depends="clean">
+		<mkdir dir="build"/>
+		<javac destdir="build" srcdir="src"/>
+	</target>
+	
+	<target name="dist" depends="compile">
+		<jar basedir="build" includes="**/*.class" destfile="jwow.jar"/>
+	</target>
+	
+</project>
