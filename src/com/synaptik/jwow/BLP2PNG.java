@@ -25,7 +25,13 @@ import com.synaptik.jwow.blp.BLP;
 public class BLP2PNG {
 
 	public static void main(String[] args) throws Exception {
-		convertAllBLPsToPNGs(args[0]);
+		if (args.length == 1) {
+			convertAllBLPsToPNGs(args[0]);
+		} else {
+			System.out.println("Usage: blp2png <folder to convert>");
+			System.out.println("Example: blp2png C:\\Games\\WoW\\extract\\blp");
+			System.out.println("         Will convert all BLPs in all subdirectories underneath that folder and save it to the folder you are in.");
+		}
 	}
 	
 	protected static void convertAllBLPsToPNGs(String rootFolder) throws Exception {
