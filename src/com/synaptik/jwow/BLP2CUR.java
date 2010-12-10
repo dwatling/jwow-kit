@@ -1,9 +1,13 @@
 package com.synaptik.jwow;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,19 +26,19 @@ import com.synaptik.jwow.blp.BLP;
  * 
  * Dan Watling <dan@synaptik.com>
  */
-public class BLP2PNG {
+public class BLP2CUR {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length == 1) {
-			convertAllBLPsToPNGs(args[0]);
+			convertAllBLPsToCURs(args[0]);
 		} else {
-			System.out.println("Usage: blp2png <folder to convert>");
-			System.out.println("Example: blp2png C:\\Games\\WoW\\extract\\blp");
+			System.out.println("Usage: blp2cur <folder to convert>");
+			System.out.println("Example: blp2cur C:\\Games\\WoW\\extract\\blp");
 			System.out.println("         Will convert all BLPs in all subdirectories underneath specified folder");
 		}
 	}
 	
-	protected static void convertAllBLPsToPNGs(String rootFolder) throws Exception {
+	protected static void convertAllBLPsToCURs(String rootFolder) throws Exception {
 		List<File> f = getAllBLPs(new File(rootFolder));
 		
 		for (int index = 0; index < f.size(); index ++) {
@@ -51,7 +55,7 @@ public class BLP2PNG {
 					if (bi == null) {
 						System.out.println("-- UNSUPPORTED --");
 					} else {
-						ImageIO.write(bi, "png", new File(f.get(index).getAbsolutePath() + ".png"));
+						writeCUR(bi, f.get(index).getAbsolutePath());
 					}
 				}
 			} finally {
@@ -82,4 +86,31 @@ public class BLP2PNG {
 		
 	}
 
+	private static void writeCUR(BufferedImage image, String f) throws IOException {
+		ByteBuffer bb = ByteBuffer.allocate(65536);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		
+		bb.putShort((short)0);
+		bb.putShort((short)2);
+		bb.putShort((short)1);
+		bb.put((byte)image.getWidth());
+		bb.put((byte)image.getHeight());
+		bb.put((byte)0);
+		bb.put((byte)0);
+		bb.putShort((short)1);
+		bb.putShort((short)1);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(image, "PNG", baos);
+		bb.putInt(baos.size());
+		bb.putInt(bb.position()+4);
+
+		bb.put(baos.toByteArray());
+		baos.close();
+		
+		FileOutputStream fos = new FileOutputStream(f + ".cur");
+		int len = bb.position();
+		bb.rewind();
+		fos.write(bb.array(), 0, len);
+		fos.close();
+	}
 }
